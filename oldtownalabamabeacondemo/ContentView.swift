@@ -7,7 +7,8 @@ struct ContentView: View {
     @StateObject private var beaconDetector = EddystoneBeaconDetector()
     @State private var activeURL: URL? = nil
     @State private var isSimulating = false
-    
+   
+
     var body: some View {
         ZStack {
             if let url = activeURL {
@@ -24,6 +25,7 @@ struct ContentView: View {
                 ) { url in
                     withAnimation {
                         activeURL = url
+                       
                     }
                 }
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
@@ -49,6 +51,7 @@ struct MainContentView: View {
     // Video player for simulation
     @State private var player: AVPlayer? = nil
     @State private var showVideo = false
+    @State private var audioPlayer: AVPlayer?
     
     // Check if beacon is detected (real or simulated)
     var isBeaconDetected: Bool {
@@ -99,8 +102,9 @@ struct MainContentView: View {
                             } else {
                                 // Start simulation
                                 isSimulating = true
-                                setupSimulationVideo()
+                               // setupSimulationVideo()
                                 showVideo = true
+                                playSimulationAudio()
                             }
                         }
                     }) {
@@ -184,7 +188,16 @@ struct MainContentView: View {
                     
                     // Video Player (shows in simulation when detected)
                     if isSimulating && showVideo {
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .center, spacing: 10) {
+                            Label("Playing Audio Narration", systemImage: "speaker.wave.2.fill")
+                                .font(.system(size: 16, weight: .semibold, design: .serif))
+                                .foregroundColor(Color(red: 0.3, green: 0.25, blue: 0.2))
+                                .padding()
+                                .background(Material.thin)
+                                .cornerRadius(12)
+                                .shadow(color: .black.opacity(0.1), radius: 5)
+                        }
+                       /* VStack(alignment: .leading, spacing: 10) {
                             Text("Historic Site Video")
                                 .font(.system(size: 18, weight: .bold, design: .serif))
                                 .foregroundColor(Color(red: 0.3, green: 0.25, blue: 0.2))
@@ -198,7 +211,7 @@ struct MainContentView: View {
                                         player.play()
                                     }
                             }
-                        }
+                        }*/
                         .padding(.horizontal)
                         .transition(.scale.combined(with: .opacity))
                     }
@@ -312,8 +325,8 @@ struct MainContentView: View {
                     if isBeaconDetected {
                         Button(action: {
                             let url = isSimulating ?
-                                URL(string: "https://www.oldtownmontgomery.org")! :
-                                (beaconDetector.detectedURL ?? URL(string: "https://www.oldtownmontgomery.org")!)
+                                URL(string: "https://www.touroldalabamatown.com")! :
+                                (beaconDetector.detectedURL ?? URL(string: "https://www.touroldalabamatown.com")!)
                             onExploreTapped(url)
                         }) {
                             VStack(spacing: 8) {
@@ -435,6 +448,26 @@ struct MainContentView: View {
         }
     }
     
+    private func playSimulationAudio() {
+        // IMPORTANT: Replace "narration" with the actual name of your MP3 file.
+        guard let audioURL = Bundle.main.url(forResource: "intro", withExtension: "mp3") else {
+            print("Audio file 'intro.mp3' not found in project bundle.")
+            return
+        }
+        
+        // Configure the audio session to allow playback even in silent mode.
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed to set up audio session: \(error.localizedDescription)")
+        }
+        
+        // Create the player instance and start playing automatically.
+        audioPlayer = AVPlayer(url: audioURL)
+        audioPlayer?.play()
+    }
+
     private func stopSimulation() {
         isSimulating = false
         showVideo = false
