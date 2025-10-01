@@ -93,13 +93,14 @@ struct MainContentView: View {
                     // Simulation Toggle Button
                     Button(action: {
                         withAnimation(.spring()) {
-                            isSimulating.toggle()
                             if isSimulating {
+                                // Stop simulation - clean up everything
+                                stopSimulation()
+                            } else {
+                                // Start simulation
+                                isSimulating = true
                                 setupSimulationVideo()
                                 showVideo = true
-                            } else {
-                                showVideo = false
-                                player?.pause()
                             }
                         }
                     }) {
@@ -432,6 +433,19 @@ struct MainContentView: View {
                 player?.play()
             }
         }
+    }
+    
+    private func stopSimulation() {
+        isSimulating = false
+        showVideo = false
+        
+        // Pause and clean up the video player
+        player?.pause()
+        player?.replaceCurrentItem(with: nil)
+        player = nil
+        
+        // Remove any observers
+        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
 }
 
