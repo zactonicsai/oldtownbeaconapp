@@ -11,14 +11,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            if let url = activeURL {
-                WebViewPage(url: url) {
-                    withAnimation {
-                        activeURL = nil
-                    }
-                }
-                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-            } else {
+           
                 MainContentView(
                     beaconDetector: beaconDetector,
                     isSimulating: $isSimulating
@@ -29,7 +22,7 @@ struct ContentView: View {
                     }
                 }
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
-            }
+    
         }
         .onChange(of: beaconDetector.shouldOpenURL) { _, newValue in
             if newValue, let url = beaconDetector.detectedURL {
@@ -58,6 +51,7 @@ struct MainContentView: View {
         return beaconDetector.isDetected || isSimulating
     }
     
+    
     var body: some View {
         ZStack {
             // Natural gradient background
@@ -70,7 +64,12 @@ struct MainContentView: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            .ignoresSafeArea()
+            .ignoresSafeArea().onChange(of: beaconDetector.isDetected) { _, newValue in
+                if newValue && !isSimulating {
+                    // Play audio when real beacon is detected
+                    playSimulationAudio()
+                }
+            }
             
             ScrollView {
                 VStack(spacing: 25) {
@@ -476,6 +475,10 @@ struct MainContentView: View {
         player?.pause()
         player?.replaceCurrentItem(with: nil)
         player = nil
+        
+        audioPlayer?.pause()
+        audioPlayer?.replaceCurrentItem(with: nil)
+        audioPlayer = nil
         
         // Remove any observers
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
