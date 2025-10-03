@@ -11,7 +11,14 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-           
+            if let url = activeURL {
+                WebViewPage(url: url) {
+                    withAnimation {
+                        activeURL = nil
+                    }
+                }
+                .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+            } else {
                 MainContentView(
                     beaconDetector: beaconDetector,
                     isSimulating: $isSimulating
@@ -23,11 +30,12 @@ struct ContentView: View {
                 }
                 .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .trailing)))
     
-        }
+        }}
         .onChange(of: beaconDetector.shouldOpenURL) { _, newValue in
             if newValue, let url = beaconDetector.detectedURL {
                 withAnimation {
-                    activeURL = url
+                    //activeURL = url
+                    
                 }
                 beaconDetector.shouldOpenURL = false
             }
