@@ -179,6 +179,11 @@ struct MainContentView: View {
                                 .font(.system(size: 14, design: .serif))
                                 .foregroundColor(Color(red: 0.5, green: 0.4, blue: 0.35))
                                 .italic()
+                        } else {
+                            Text(beaconDetector.distanceString)
+                                .font(.system(size: 14, design: .serif))
+                                .foregroundColor(Color(red: 0.5, green: 0.4, blue: 0.35))
+                                .italic()
                         }
                         
                         if isSimulating {
